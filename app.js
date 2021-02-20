@@ -36,11 +36,16 @@ app.post('/registration', (req, res) => {
         console.log(data)
         console.log('_________________________________________')
 
-        let dataJson = JSON.parse(data.toString());
+        // let dataJson = JSON.parse(data.toString());
+        // let audit = dataJson.forEach(elem => console.log(elem))
 
-        console.log(dataJson)
 
-        // let audit = dataJson.forEach()
+        //*********************Це основний робочий варіант до якого я додумався поки що, але в ньому дані приходять об*єктами і без масиву....
+        fs.appendFile(userPath, `${JSON.stringify(req.body)}`, err1 => {
+            if (err1){
+                console.log(err1)
+            }
+        })
         // fs.writeFile(userPath, JSON.stringify(dataJson), err => {
         //     if (err) {
         //         console.log(err);

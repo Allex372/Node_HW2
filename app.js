@@ -3,92 +3,111 @@ const expressHbs = require('express-handlebars');
 const app = express();
 const fs = require('fs');
 const path = require('path');
-const userPath = path.join(__dirname + '/userMass/users.json');
+const userPath = path.join(__dirname, 'userMass', 'users.json');
 
-app.use(express.json())
-app.use(express.urlencoded({extended: true}))
+app.use(express.json());
+app.use(express.urlencoded({extended: true}));
+app.use(express.static(path.join(__dirname, 'views')));
 
-app.use(express.static(path.join(__dirname, 'views')))
-app.set('view engine', '.hbs')
+app.set('view engine', '.hbs');
 app.engine('.hbs', expressHbs({
     defaultLayout: false
-}))
-app.set('views', path.join(__dirname, 'views'))
+}));
+app.set('views', path.join(__dirname, 'views'));
 
 app.listen(5000, () => {
-    console.log('Server 5000 turbo is working')
+    console.log('Server 5000 turbo is working======================================================================================================');
 });
 
+app.get('/errorLogination', (req, res) => {
+    res.render('errorLogination');
+});
+
+app.get('/errorRegistration', (req, res) => {
+    res.render('errorRegistration');
+});
 app.get('/registration', (req, res) => {
-    res.render('registration')
+    res.render('registration');
 });
 
 app.post('/registration', (req, res) => {
-    console.log('****************************************************')
-    console.log(req.body)
-    console.log('****************************************************')
-    res.json('Hello REG .hbs')
     fs.readFile(userPath, (err, data) => {
         if (err) {
-            console.log(err)
+            console.log(err);
+            return;
         }
-        console.log('_________________________________________')
-        console.log(data)
-        console.log('_________________________________________')
 
-        // let dataJson = JSON.parse(data.toString());
-        // let audit = dataJson.forEach(elem => console.log(elem))
+        console.log(data);
+        const parseData = JSON.parse(data.toString());
+        let asame = parseData.find(value => value.login === req.body.login);
+        // parseData.forEach(value => {
+        //     console.log(value)
+        // });
+        if (asame) {
+            res.redirect('/errorRegistration');
+        } else {
+            parseData.push(req.body);
+            fs.writeFile(userPath, JSON.stringify(parseData), err1 => {
+                if (err1) {
+                    console.log(err1);
+                    return;
+                }
 
-
-        //*********************Це основний робочий варіант до якого я додумався поки що, але в ньому дані приходять об*єктами і без масиву....
-        fs.appendFile(userPath, `${JSON.stringify(req.body)}`, err1 => {
-            if (err1){
-                console.log(err1)
-            }
-        })
-        // fs.writeFile(userPath, JSON.stringify(dataJson), err => {
-        //     if (err) {
-        //         console.log(err);
-        //     }
-        // })
-        // res.redirect('/users');
+            })
+            // res.json('Hello REG .hbs');
+            res.redirect('/users');
+        }
     })
 });
 
-// app.get('/users', (req, res) => {
-//     res.render('users', {mass})
-// })
+app.get('/users', (req, res) => {
+    fs.readFile(userPath, (err, data) => {
+        if (err) {
+            console.log(err);
+            return;
+        }
 
-//function read...
-// function readUserMass(userPath){
-//     fs.readdir(userPath,(err, files) => {
-//         for (const file of files) {
-//             fs.readFile(file, (err1, data) => {
-//                 if (err1){
-//                     console.log(err1)
-//                 }
-//             })
-//         }
-//
-//     })
-// }
-// readUserMass(userPath)
+        let dataParse = JSON.parse(data.toString());
+        res.render('users', {dataParse});
+    })
+})
 
-// app.get('/hello', (req, res) => {
-//     res.send('HELLO WORLD')
-// });
-//
-// app.get('/users', (req, res) => {
-//     res.json([
-//         {name: "Oleg", gender: "male", age: 17},
-//         {name: "Petro", gender: "male", age: 18},
-//         {name: "Andriy", gender: "male", age: 19},
-//         {name: "Ostap", gender: "male", age: 21},
-//         {name: "Egor", gender: "male", age: 22},
-//         {name: "Alina", gender: "female", age: 18},
-//         {name: "Marina", gender: "female", age: 18},
-//         {name: "Anastasia", gender: "female", age: 23},
-//         {name: "Milena", gender: "female", age: 24},
-//         {name: "Princes", gender: "female", age: 25}
-//     ])
-// })
+app.get('/logination', (req, res) => {
+    res.render('logination');
+});
+
+app.get('/users/:userId', (req, res) => {
+    fs.readFile(userPath, (err, data) => {
+        if (err) {
+            console.log(err);
+            return;
+        }
+
+        let dataParse = JSON.parse(data.toString());
+        const {userId} = req.params;
+        console.log(req.params)
+        res.render('user', {user: dataParse[userId]})
+    })
+})
+
+app.post('/logination', (req, res) => {
+    fs.readFile(userPath, (err, data) => {
+        if (err) {
+            console.log(err);
+            return;
+        }
+
+        const parseDataLogin = JSON.parse(data.toString());
+        let index = parseDataLogin.findIndex(value => value.login === req.body.login && value.password === req.body.password)
+        if (index !== -1) {
+            res.redirect(`/users/${index}`);
+            return;
+        }
+        res.redirect('/errorLogination');
+    })
+})
+
+
+
+
+

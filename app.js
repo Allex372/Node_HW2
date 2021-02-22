@@ -19,13 +19,14 @@ app.listen(5000, () => {
     console.log('Server 5000 turbo is working======================================================================================================');
 });
 
-app.get('/errorLogination', (req, res) => {
-    res.render('errorLogination');
+app.get('/error', (req, res) => {
+    res.render('error');
 });
 
-app.get('/errorRegistration', (req, res) => {
-    res.render('errorRegistration');
-});
+// app.get('/errorRegistration', (req, res) => {
+//     res.render('errorRegistration');
+// });
+
 app.get('/registration', (req, res) => {
     res.render('registration');
 });
@@ -44,7 +45,7 @@ app.post('/registration', (req, res) => {
         //     console.log(value)
         // });
         if (asame) {
-            res.redirect('/errorRegistration');
+            res.render('error', {error: 'USER WITH THIS DATA IS ALREADY EXIST'});
         } else {
             parseData.push(req.body);
             fs.writeFile(userPath, JSON.stringify(parseData), err1 => {
@@ -103,7 +104,7 @@ app.post('/logination', (req, res) => {
             res.redirect(`/users/${index}`);
             return;
         }
-        res.redirect('/errorLogination');
+        res.render('error', {error: 'WRONG LOGIN OR PASSWORD'});
     })
 })
 
